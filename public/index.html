@@ -6,7 +6,6 @@
     <title>👩‍❤️‍👨 情侣厨房挑战</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="manifest" href="manifest.json">
 </head>
 <body>
     <div class="container">
@@ -25,6 +24,10 @@
             <button class="nav-btn" onclick="switchTab('kitchen')">
                 <i class="fas fa-utensil-spoon"></i> 后厨
             </button>
+            <!-- 新增管理按钮 -->
+            <button class="nav-btn" onclick="switchTab('manage')">
+                <i class="fas fa-cog"></i> 管理
+            </button>
         </nav>
 
         <!-- 菜单页面 -->
@@ -33,8 +36,6 @@
                 <h1><i class="fas fa-heart"></i> 今天想吃点什么？</h1>
                 <p>选好菜，让TA为你下厨吧！</p>
             </div>
-            
-            <!-- 菜品分类 -->
             <div class="category-tabs">
                 <button class="cat-btn active" onclick="filterDishes('all')">全部</button>
                 <button class="cat-btn" onclick="filterDishes('breakfast')">早餐</button>
@@ -42,21 +43,13 @@
                 <button class="cat-btn" onclick="filterDishes('dessert')">甜品</button>
                 <button class="cat-btn" onclick="filterDishes('drink')">饮品</button>
             </div>
-            
-            <!-- 菜品列表 -->
-            <div id="dish-list" class="dish-grid">
-                <!-- 菜品会通过JS动态加载 -->
-            </div>
+            <div id="dish-list" class="dish-grid"></div>
         </div>
 
         <!-- 购物车页面 -->
         <div id="cart-page" class="page">
-            <div class="header">
-                <h1><i class="fas fa-shopping-cart"></i> 购物车</h1>
-            </div>
-            <div id="cart-items" class="cart-container">
-                <!-- 购物车内容 -->
-            </div>
+            <div class="header"><h1><i class="fas fa-shopping-cart"></i> 购物车</h1></div>
+            <div id="cart-items" class="cart-container"></div>
             <div class="cart-footer">
                 <button class="btn btn-primary" onclick="submitOrder()">
                     <i class="fas fa-paper-plane"></i> 发送订单给TA
@@ -68,37 +61,48 @@
         <div id="orders-page" class="page">
             <div class="header">
                 <h1><i class="fas fa-clipboard-list"></i> 我的订单</h1>
-                <button class="btn btn-small" onclick="refreshOrders()">
+                <button class="btn btn-small" onclick="loadOrders()">
                     <i class="fas fa-sync-alt"></i> 刷新
                 </button>
             </div>
-            <div id="orders-list" class="orders-container">
-                <!-- 订单列表 -->
-            </div>
+            <div id="orders-list" class="orders-container"></div>
         </div>
 
         <!-- 后厨页面 -->
         <div id="kitchen-page" class="page">
             <div class="header">
                 <h1><i class="fas fa-utensil-spoon"></i> 后厨控制台</h1>
-                <p>亲爱的，开始展现厨艺吧！</p>
             </div>
-            <div id="kitchen-orders" class="kitchen-container">
-                <!-- 后厨订单 -->
-            </div>
+            <div id="kitchen-orders" class="kitchen-container"></div>
             <div class="stats">
-                <div class="stat-card">
-                    <h3>今日完成</h3>
-                    <p id="today-completed">0</p>
-                </div>
-                <div class="stat-card">
-                    <h3>等待中</h3>
-                    <p id="waiting-count">0</p>
-                </div>
+                <div class="stat-card"><h3>今日完成</h3><p id="today-completed">0</p></div>
+                <div class="stat-card"><h3>等待中</h3><p id="waiting-count">0</p></div>
             </div>
         </div>
 
-        <!-- 订单详情弹窗 -->
+        <!-- 新增：管理页面 -->
+        <div id="manage-page" class="page">
+            <div class="header"><h1><i class="fas fa-cog"></i> 菜品管理</h1></div>
+            <div class="order-card" style="margin-bottom: 20px;">
+                <h3>添加新菜品</h3>
+                <div style="display: grid; gap: 10px; margin-top: 10px;">
+                    <input type="text" id="new-dish-name" placeholder="菜品名称（如：红烧肉）">
+                    <input type="text" id="new-dish-emoji" placeholder="图标（如：🥩）">
+                    <select id="new-dish-cat">
+                        <option value="breakfast">早餐</option>
+                        <option value="lunch">正餐</option>
+                        <option value="dessert">甜品</option>
+                        <option value="drink">饮品</option>
+                    </select>
+                    <input type="number" id="new-dish-time" placeholder="时间（分钟）">
+                    <button class="btn" style="background: #2ed573; color: white;" onclick="addDish()">确认添加</button>
+                </div>
+            </div>
+            <h3>当前菜单列表</h3>
+            <div id="manage-dish-list" style="margin-top: 10px;"></div>
+        </div>
+
+        <!-- 详情弹窗 -->
         <div id="order-modal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeModal()">&times;</span>
@@ -106,11 +110,8 @@
                 <div id="modal-body"></div>
             </div>
         </div>
-
-        <!-- 消息提示 -->
         <div id="toast" class="toast"></div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
