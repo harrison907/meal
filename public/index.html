@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👩‍❤️‍👨 情侣厨房挑战</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航 -->
+        <nav class="navbar">
+            <button class="nav-btn active" onclick="switchTab('menu')">
+                <i class="fas fa-utensils"></i> 菜单
+            </button>
+            <button class="nav-btn" onclick="switchTab('cart')">
+                <i class="fas fa-shopping-cart"></i> 购物车
+                <span id="cart-count" class="badge">0</span>
+            </button>
+            <button class="nav-btn" onclick="switchTab('orders')">
+                <i class="fas fa-clipboard-list"></i> 订单
+            </button>
+            <button class="nav-btn" onclick="switchTab('kitchen')">
+                <i class="fas fa-utensil-spoon"></i> 后厨
+            </button>
+        </nav>
+
+        <!-- 菜单页面 -->
+        <div id="menu-page" class="page active">
+            <div class="header">
+                <h1><i class="fas fa-heart"></i> 今天想吃点什么？</h1>
+                <p>选好菜，让TA为你下厨吧！</p>
+            </div>
+            
+            <!-- 菜品分类 -->
+            <div class="category-tabs">
+                <button class="cat-btn active" onclick="filterDishes('all')">全部</button>
+                <button class="cat-btn" onclick="filterDishes('breakfast')">早餐</button>
+                <button class="cat-btn" onclick="filterDishes('lunch')">正餐</button>
+                <button class="cat-btn" onclick="filterDishes('dessert')">甜品</button>
+                <button class="cat-btn" onclick="filterDishes('drink')">饮品</button>
+            </div>
+            
+            <!-- 菜品列表 -->
+            <div id="dish-list" class="dish-grid">
+                <!-- 菜品会通过JS动态加载 -->
+            </div>
+        </div>
+
+        <!-- 购物车页面 -->
+        <div id="cart-page" class="page">
+            <div class="header">
+                <h1><i class="fas fa-shopping-cart"></i> 购物车</h1>
+            </div>
+            <div id="cart-items" class="cart-container">
+                <!-- 购物车内容 -->
+            </div>
+            <div class="cart-footer">
+                <button class="btn btn-primary" onclick="submitOrder()">
+                    <i class="fas fa-paper-plane"></i> 发送订单给TA
+                </button>
+            </div>
+        </div>
+
+        <!-- 订单页面 -->
+        <div id="orders-page" class="page">
+            <div class="header">
+                <h1><i class="fas fa-clipboard-list"></i> 我的订单</h1>
+                <button class="btn btn-small" onclick="refreshOrders()">
+                    <i class="fas fa-sync-alt"></i> 刷新
+                </button>
+            </div>
+            <div id="orders-list" class="orders-container">
+                <!-- 订单列表 -->
+            </div>
+        </div>
+
+        <!-- 后厨页面 -->
+        <div id="kitchen-page" class="page">
+            <div class="header">
+                <h1><i class="fas fa-utensil-spoon"></i> 后厨控制台</h1>
+                <p>亲爱的，开始展现厨艺吧！</p>
+            </div>
+            <div id="kitchen-orders" class="kitchen-container">
+                <!-- 后厨订单 -->
+            </div>
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>今日完成</h3>
+                    <p id="today-completed">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>等待中</h3>
+                    <p id="waiting-count">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 订单详情弹窗 -->
+        <div id="order-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2 id="modal-title"></h2>
+                <div id="modal-body"></div>
+            </div>
+        </div>
+
+        <!-- 消息提示 -->
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
