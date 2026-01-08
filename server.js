@@ -81,3 +81,33 @@ app.put('/api/order/:id', async (req, res) => {
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, './public/index.html')));
 
 app.listen(PORT, () => console.log(`🚀 服务运行在端口: ${PORT}`));
+
+// ...前面的代码保持不变 (express, mongoose连接等)
+
+// 定义模型 - 给 Order 增加 rating
+const Dish = mongoose.model('Dish', {
+    name: String, emoji: String, category: String, time: Number
+});
+const Order = mongoose.model('Order', {
+    items: Array, 
+    status: { type: String, default: 'waiting' }, 
+    rating: { type: Number, default: 0 }, // 新增：评分字段 (1-5)
+    createdAt: { type: Date, default: Date.now }
+});
+
+// --- API 路由 ---
+
+// 评分接口
+app.put('/api/order/:id/rate', async (req, res) => {
+    await Order.findByIdAndUpdate(req.params.id, { rating: req.body.rating });
+    res.json({ success: true });
+});
+
+// 其他接口保持不变 (GET /api/menu, POST /api/menu, DELETE /api/menu, POST /api/order, GET /api/orders, PUT /api/order/:id)
+// ... 粘贴之前的 API 代码 ...
+
+app.get('/chef', (req, res) => res.sendFile(path.join(__dirname, './public/chef.html')));
+app.get('*', (req, res) => res.sendFile(path.join(__dirname, './public/index.html')));
+
+app.listen(PORT, () => console.log(`服务启动: ${PORT}`));
+
