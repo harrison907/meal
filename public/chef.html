@@ -3,37 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👨‍🍳 珍珍的餐厅 - 后厨控制台</title>
+    <title>👨‍🍳 珍珍的餐厅-后厨</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .chef-container { padding: 20px; max-width: 800px; margin: 0 auto; }
-        .stats-bar { display: flex; gap: 10px; margin-bottom: 20px; }
-        .stat-item { flex: 1; background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .stat-item h3 { font-size: 14px; color: #666; margin-bottom: 5px; }
-        .stat-item p { font-size: 24px; font-weight: bold; color: #ff6b8b; }
-        .kitchen-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; border-left: 5px solid #ff6b8b; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .dish-info { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #eee; }
-        .avg-tag { font-size: 12px; color: #ff9f43; background: #fff4e6; padding: 2px 6px; border-radius: 4px; }
-    </style>
 </head>
-<body onload="initApp()"> <!-- 注意这里改成了 initApp -->
-    <div class="chef-container">
-        <div class="header">
-            <h1>👨‍🍳 后厨大餐生产线</h1>
-            <p>加油大厨，珍珍正等着开饭呢！</p>
+<body onload="initApp()">
+    <div class="container">
+        <div class="header"><h1>👨‍🍳 后厨生产线</h1></div>
+        <div class="stats">
+            <div class="stat-card"><h3>待制作</h3><p id="waiting-count">0</p></div>
+            <div class="stat-card"><h3>今日完成</h3><p id="today-completed">0</p></div>
         </div>
-
-        <div class="stats-bar">
-            <div class="stat-item"><h3>待制作</h3><p id="waiting-count">0</p></div>
-            <div class="stat-item"><h3>今日已出餐</h3><p id="today-completed">0</p></div>
-        </div>
-
-        <!-- 核心：订单显示区域 -->
-        <div id="kitchen-orders">
-            <p style="text-align:center; color:#999; margin-top:50px;">正在努力加载订单...</p>
-        </div>
-
+        <div id="kitchen-orders"></div>
         <div id="toast" class="toast"></div>
     </div>
     <script src="script.js"></script>
