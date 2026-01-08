@@ -7,25 +7,22 @@ const mongoose = require('mongoose');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// 【关键修改】使用你截图中的 MONGO_URI 变量
+// 使用你截图中的环境变量 MONGO_URI
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/kitchen";
 
 mongoose.connect(MONGO_URI)
     .then(() => console.log("✅ 数据库连接成功"))
     .catch(err => console.error("❌ 数据库连接失败:", err));
 
-// 定义数据库模型
+// --- 数据库模型 (只定义一次，防止报错) ---
 const Dish = mongoose.model('Dish', {
-    name: String,
-    emoji: String,
-    category: String,
-    time: Number,
-    difficulty: { type: String, default: "★★★☆☆" }
+    name: String, emoji: String, category: String, time: Number
 });
 
 const Order = mongoose.model('Order', {
-    items: Array,
+    items: Array, 
     status: { type: String, default: 'waiting' },
+    rating: { type: Number, default: 0 }, // 存储评分 1-5
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -33,81 +30,54 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, './public')));
 
-// --- 菜品 API ---
+// --- API 接口 ---
+
+// 1. 获取菜单
 app.get('/api/menu', async (req, res) => {
-    try {
-        const menu = await Dish.find();
-        if (menu.length === 0) {
-            // 初始默认菜品
-            const defaults = [
-                { name: "爱心煎蛋", category: "breakfast", time: 5, emoji: "🍳" },
-                { name: "浪漫意面", category: "lunch", time: 25, emoji: "🍝" }
-            ];
-            await Dish.insertMany(defaults);
-            return res.json(defaults);
-        }
-        res.json(menu);
-    } catch (e) { res.status(500).send(e); }
+    const menu = await Dish.find();
+    res.json(menu);
 });
 
+// 2. 添加菜品
 app.post('/api/menu', async (req, res) => {
     const dish = new Dish(req.body);
     await dish.save();
     res.json(dish);
 });
 
+// 3. 删除菜品
 app.delete('/api/menu/:id', async (req, res) => {
     await Dish.findByIdAndDelete(req.params.id);
     res.json({ success: true });
 });
 
-// --- 订单 API ---
+// 4. 提交订单
 app.post('/api/order', async (req, res) => {
     const order = new Order(req.body);
     await order.save();
     res.json(order);
 });
 
+// 5. 获取订单
 app.get('/api/orders', async (req, res) => {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json(orders);
 });
 
+// 6. 更新订单状态 (后厨用)
 app.put('/api/order/:id', async (req, res) => {
     await Order.findByIdAndUpdate(req.params.id, { status: req.body.status });
     res.json({ success: true });
 });
 
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, './public/index.html')));
-
-app.listen(PORT, () => console.log(`🚀 服务运行在端口: ${PORT}`));
-
-// ...前面的代码保持不变 (express, mongoose连接等)
-
-// 定义模型 - 给 Order 增加 rating
-const Dish = mongoose.model('Dish', {
-    name: String, emoji: String, category: String, time: Number
-});
-const Order = mongoose.model('Order', {
-    items: Array, 
-    status: { type: String, default: 'waiting' }, 
-    rating: { type: Number, default: 0 }, // 新增：评分字段 (1-5)
-    createdAt: { type: Date, default: Date.now }
-});
-
-// --- API 路由 ---
-
-// 评分接口
+// 7. 评价订单 (前厅用)
 app.put('/api/order/:id/rate', async (req, res) => {
     await Order.findByIdAndUpdate(req.params.id, { rating: req.body.rating });
     res.json({ success: true });
 });
 
-// 其他接口保持不变 (GET /api/menu, POST /api/menu, DELETE /api/menu, POST /api/order, GET /api/orders, PUT /api/order/:id)
-// ... 粘贴之前的 API 代码 ...
-
+// --- 路由配置 ---
 app.get('/chef', (req, res) => res.sendFile(path.join(__dirname, './public/chef.html')));
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, './public/index.html')));
 
-app.listen(PORT, () => console.log(`服务启动: ${PORT}`));
-
+app.listen(PORT, () => console.log(`🚀 服务运行在: ${PORT}`));
