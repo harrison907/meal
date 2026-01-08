@@ -1,6 +1,5 @@
 {
-  "buildCommand": "cd server && npm install",
-  "startCommand": "cd server && npm start",
-  "outputDirectory": "server",
-  "installCommand": "cd server && npm install"
+  "buildCommand": "npm install",
+  "startCommand": "node server.js",
+  "installCommand": "npm install"
 }
