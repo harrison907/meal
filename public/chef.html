@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👨‍🍳 后厨控制台</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body onload="loadKitchen()">
+    <div class="container">
+        <div class="header">
+            <h1>👨‍🍳 后厨大餐生产线</h1>
+            <p>只管做饭，不管点餐</p>
+        </div>
+        <div id="kitchen-orders" class="kitchen-container"></div>
+        <div class="stats">
+            <div class="stat-card"><h3>已完成</h3><p id="today-completed">0</p></div>
+            <div class="stat-card"><h3>待制作</h3><p id="waiting-count">0</p></div>
+        </div>
+        <div id="toast" class="toast"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
