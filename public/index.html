@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👩‍❤️‍👨 情侣厨房-前厅</title>
+    <title>👩‍❤️‍👨 珍珍的餐厅-前厅</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -12,32 +12,30 @@
         <nav class="navbar">
             <button class="nav-btn active" onclick="switchTab('menu')"><i class="fas fa-utensils"></i> 菜单</button>
             <button class="nav-btn" onclick="switchTab('cart')"><i class="fas fa-shopping-cart"></i> 清单 <span id="cart-count" class="badge">0</span></button>
-            <button class="nav-btn" onclick="switchTab('orders')"><i class="fas fa-history"></i> 订单/评价</button>
-            <button class="nav-btn" onclick="switchTab('manage')"><i class="fas fa-edit"></i> 管理菜单</button>
+            <button class="nav-btn" onclick="switchTab('orders')"><i class="fas fa-history"></i> 订单</button>
+            <button class="nav-btn" onclick="switchTab('manage')"><i class="fas fa-edit"></i> 管理</button>
         </nav>
 
-        <!-- 菜单页 -->
-        <div id="menu-page" class="page active">
-            <div id="dish-list" class="dish-grid"></div>
+        <div id="menu-page" class="page active"><div id="dish-list" class="dish-grid"></div></div>
+        
+        <div id="cart-page" class="page">
+            <div class="header"><h1>🛒 待下单清单</h1></div>
+            <div id="cart-items"></div>
+            <div class="cart-footer"><button class="btn btn-primary" onclick="submitOrder()">发送订单给大厨 🚀</button></div>
         </div>
 
-        <!-- 订单页：包含评分功能 -->
-        <div id="orders-page" class="page">
-            <div id="orders-list" class="orders-container"></div>
-        </div>
+        <div id="orders-page" class="page"><div id="orders-list" class="orders-container"></div></div>
 
-        <!-- 管理页：增删菜品 -->
         <div id="manage-page" class="page">
             <div class="order-card">
                 <h3>新增菜品</h3>
                 <input type="text" id="new-dish-name" placeholder="名称">
                 <input type="text" id="new-dish-emoji" placeholder="图标">
-                <input type="number" id="new-dish-time" placeholder="时长">
+                <input type="number" id="new-dish-time" placeholder="分钟">
                 <button class="btn" style="background:#ff6b8b;color:white;margin-top:10px;" onclick="addDish()">上架菜品</button>
             </div>
             <div id="manage-dish-list" style="margin-top:20px;"></div>
         </div>
-
         <div id="toast" class="toast"></div>
     </div>
     <script src="script.js"></script>
