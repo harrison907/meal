@@ -4,14 +4,21 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+// Zeabur 等云平台会自动提供 PORT 环境变量，如果没有则默认使用 8080
+const PORT = process.env.PORT || 8080;
 
-// 中间件
+// 中间件配置
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, '../public')));
 
-// 模拟数据库
+/**
+ * 【重要修改】
+ * 因为 server.js 现在在根目录，与 public 文件夹平级
+ * 路径从 '../public' 改为 './public'
+ */
+app.use(express.static(path.join(__dirname, './public')));
+
+// 模拟数据库（内存存储，重启服务会重置）
 let orders = [];
 let menu = [
     { id: 1, name: "爱心煎蛋", category: "breakfast", time: 5, emoji: "🍳", difficulty: "★☆☆☆☆" },
@@ -21,11 +28,14 @@ let menu = [
     { id: 5, name: "幸福咖喱饭", category: "lunch", time: 30, emoji: "🍛", difficulty: "★★★☆☆" }
 ];
 
-// API路由
+// --- API 路由开始 ---
+
+// 获取菜单
 app.get('/api/menu', (req, res) => {
     res.json(menu);
 });
 
+// 提交订单
 app.post('/api/order', (req, res) => {
     const order = {
         id: Date.now(),
@@ -38,10 +48,12 @@ app.post('/api/order', (req, res) => {
     res.json({ success: true, orderId: order.id });
 });
 
+// 获取所有订单
 app.get('/api/orders', (req, res) => {
     res.json(orders);
 });
 
+// 更新订单状态
 app.put('/api/order/:id', (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
@@ -56,12 +68,22 @@ app.put('/api/order/:id', (req, res) => {
     }
 });
 
-// 默认路由 - 返回前端页面
+// --- API 路由结束 ---
+
+/**
+ * 【重要修改】
+ * 默认路由 - 当访问非 API 路径时，返回前端 index.html 页面
+ * 路径从 '../public/index.html' 改为 './public/index.html'
+ */
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
+    res.sendFile(path.join(__dirname, './public/index.html'));
 });
 
+// 启动服务器
 app.listen(PORT, () => {
-    console.log(`服务器运行在 http://localhost:${PORT}`);
-    console.log(`手机访问：请确保在同一WiFi下，访问你的IP地址:${PORT}`);
+    console.log(`=================================`);
+    console.log(`🚀 服务器已启动！`);
+    console.log(`端口: ${PORT}`);
+    console.log(`环境: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`=================================`);
 });
