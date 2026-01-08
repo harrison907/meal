@@ -13,7 +13,7 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log("✅ 数据库连接成功"))
     .catch(err => console.error("❌ 数据库连接失败:", err));
 
-// --- 数据库模型 (增加防重定义逻辑) ---
+// --- 数据库模型 (安全写法：防止重复定义) ---
 const Dish = mongoose.models.Dish || mongoose.model('Dish', {
     name: String, emoji: String, category: String, time: Number
 });
@@ -29,11 +29,10 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, './public')));
 
-// --- API 接口 ---
+// API 接口
 app.get('/api/menu', async (req, res) => {
     try {
         let menu = await Dish.find();
-        // 如果数据库没菜，自动加两个，防止页面空白
         if (menu.length === 0) {
             menu = await Dish.insertMany([
                 { name: "爱心煎蛋", emoji: "🍳", category: "breakfast", time: 5 },
@@ -76,6 +75,7 @@ app.put('/api/order/:id/rate', async (req, res) => {
     res.json({ success: true });
 });
 
+// 页面路由
 app.get('/chef', (req, res) => res.sendFile(path.join(__dirname, './public/chef.html')));
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, './public/index.html')));
 
