@@ -3,113 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👩‍❤️‍👨 情侣厨房挑战</title>
+    <title>👩‍❤️‍👨 情侣厨房-前厅</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <!-- 顶部导航 -->
         <nav class="navbar">
-            <button class="nav-btn active" onclick="switchTab('menu')">
-                <i class="fas fa-utensils"></i> 菜单
-            </button>
-            <button class="nav-btn" onclick="switchTab('cart')">
-                <i class="fas fa-shopping-cart"></i> 购物车
-                <span id="cart-count" class="badge">0</span>
-            </button>
-            <button class="nav-btn" onclick="switchTab('orders')">
-                <i class="fas fa-clipboard-list"></i> 订单
-            </button>
-            <button class="nav-btn" onclick="switchTab('kitchen')">
-                <i class="fas fa-utensil-spoon"></i> 后厨
-            </button>
-            <!-- 新增管理按钮 -->
-            <button class="nav-btn" onclick="switchTab('manage')">
-                <i class="fas fa-cog"></i> 管理
-            </button>
+            <button class="nav-btn active" onclick="switchTab('menu')"><i class="fas fa-utensils"></i> 菜单</button>
+            <button class="nav-btn" onclick="switchTab('cart')"><i class="fas fa-shopping-cart"></i> 清单 <span id="cart-count" class="badge">0</span></button>
+            <button class="nav-btn" onclick="switchTab('orders')"><i class="fas fa-history"></i> 订单/评价</button>
+            <button class="nav-btn" onclick="switchTab('manage')"><i class="fas fa-edit"></i> 管理菜单</button>
         </nav>
 
-        <!-- 菜单页面 -->
+        <!-- 菜单页 -->
         <div id="menu-page" class="page active">
-            <div class="header">
-                <h1><i class="fas fa-heart"></i> 今天想吃点什么？</h1>
-                <p>选好菜，让TA为你下厨吧！</p>
-            </div>
-            <div class="category-tabs">
-                <button class="cat-btn active" onclick="filterDishes('all')">全部</button>
-                <button class="cat-btn" onclick="filterDishes('breakfast')">早餐</button>
-                <button class="cat-btn" onclick="filterDishes('lunch')">正餐</button>
-                <button class="cat-btn" onclick="filterDishes('dessert')">甜品</button>
-                <button class="cat-btn" onclick="filterDishes('drink')">饮品</button>
-            </div>
             <div id="dish-list" class="dish-grid"></div>
         </div>
 
-        <!-- 购物车页面 -->
-        <div id="cart-page" class="page">
-            <div class="header"><h1><i class="fas fa-shopping-cart"></i> 购物车</h1></div>
-            <div id="cart-items" class="cart-container"></div>
-            <div class="cart-footer">
-                <button class="btn btn-primary" onclick="submitOrder()">
-                    <i class="fas fa-paper-plane"></i> 发送订单给TA
-                </button>
-            </div>
-        </div>
-
-        <!-- 订单页面 -->
+        <!-- 订单页：包含评分功能 -->
         <div id="orders-page" class="page">
-            <div class="header">
-                <h1><i class="fas fa-clipboard-list"></i> 我的订单</h1>
-                <button class="btn btn-small" onclick="loadOrders()">
-                    <i class="fas fa-sync-alt"></i> 刷新
-                </button>
-            </div>
             <div id="orders-list" class="orders-container"></div>
         </div>
 
-        <!-- 后厨页面 -->
-        <div id="kitchen-page" class="page">
-            <div class="header">
-                <h1><i class="fas fa-utensil-spoon"></i> 后厨控制台</h1>
-            </div>
-            <div id="kitchen-orders" class="kitchen-container"></div>
-            <div class="stats">
-                <div class="stat-card"><h3>今日完成</h3><p id="today-completed">0</p></div>
-                <div class="stat-card"><h3>等待中</h3><p id="waiting-count">0</p></div>
-            </div>
-        </div>
-
-        <!-- 新增：管理页面 -->
+        <!-- 管理页：增删菜品 -->
         <div id="manage-page" class="page">
-            <div class="header"><h1><i class="fas fa-cog"></i> 菜品管理</h1></div>
-            <div class="order-card" style="margin-bottom: 20px;">
-                <h3>添加新菜品</h3>
-                <div style="display: grid; gap: 10px; margin-top: 10px;">
-                    <input type="text" id="new-dish-name" placeholder="菜品名称（如：红烧肉）">
-                    <input type="text" id="new-dish-emoji" placeholder="图标（如：🥩）">
-                    <select id="new-dish-cat">
-                        <option value="breakfast">早餐</option>
-                        <option value="lunch">正餐</option>
-                        <option value="dessert">甜品</option>
-                        <option value="drink">饮品</option>
-                    </select>
-                    <input type="number" id="new-dish-time" placeholder="时间（分钟）">
-                    <button class="btn" style="background: #2ed573; color: white;" onclick="addDish()">确认添加</button>
-                </div>
+            <div class="order-card">
+                <h3>新增菜品</h3>
+                <input type="text" id="new-dish-name" placeholder="名称">
+                <input type="text" id="new-dish-emoji" placeholder="图标">
+                <input type="number" id="new-dish-time" placeholder="时长">
+                <button class="btn" style="background:#ff6b8b;color:white;margin-top:10px;" onclick="addDish()">上架菜品</button>
             </div>
-            <h3>当前菜单列表</h3>
-            <div id="manage-dish-list" style="margin-top: 10px;"></div>
+            <div id="manage-dish-list" style="margin-top:20px;"></div>
         </div>
 
-        <!-- 详情弹窗 -->
-        <div id="order-modal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeModal()">&times;</span>
-                <h2 id="modal-title"></h2>
-                <div id="modal-body"></div>
-            </div>
-        </div>
         <div id="toast" class="toast"></div>
     </div>
     <script src="script.js"></script>
