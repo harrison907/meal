@@ -43,7 +43,20 @@ app.post('/api/wallet/recharge', async (req, res) => {
     res.json({ success: true });
 });
 
-app.get('/api/menu', async (req, res) => res.json(await Dish.find()));
+// --- server.js 里的对应部分修改 ---
+app.get('/api/menu', async (req, res) => {
+    try {
+        let menu = await Dish.find();
+        if (menu.length === 0) {
+            // 确保初始菜品 isApproved 为 true，否则前厅看不见
+            menu = await Dish.insertMany([
+                { name: "爱心煎蛋", emoji: "🍳", category: "breakfast", time: 5, price: 10, isApproved: true },
+                { name: "浪漫意面", emoji: "🍝", category: "lunch", time: 20, price: 25, isApproved: true }
+            ]);
+        }
+        res.json(menu);
+    } catch (e) { res.status(500).json(e); }
+});
 app.post('/api/menu', async (req, res) => res.json(await new Dish(req.body).save()));
 app.put('/api/menu/:id', async (req, res) => res.json(await Dish.findByIdAndUpdate(req.params.id, req.body)));
 app.delete('/api/menu/:id', async (req, res) => res.json(await Dish.findByIdAndDelete(req.params.id)));
@@ -69,3 +82,4 @@ app.get('/chef', (req, res) => res.sendFile(path.join(__dirname, './public/chef.
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, './public/index.html')));
 
 app.listen(PORT, () => console.log(`🚀 餐厅系统运行中: ${PORT}`));
+
