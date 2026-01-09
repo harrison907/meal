@@ -171,7 +171,102 @@ body {
 .status-cooking { color: #1e90ff; }
 .status-done { color: #2ed573; }
 
-/* 响应式设计 */
+/* ============== 新增优化样式 ============== */
+
+/* 加载动画 */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #ff6b8b;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Toast 通知样式 */
+.toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 25px;
+    z-index: 1001;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.toast.show {
+    opacity: 1;
+}
+
+/* 改进的按钮样式 */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* 购物车物品样式 */
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: white;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.cart-item button {
+    padding: 5px 12px;
+    background: #ff4757;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.cart-item button:hover {
+    background: #ff2e43;
+}
+
+/* 聊天消息样式 */
+.chat-message {
+    max-width: 80%;
+    margin: 8px 0;
+    padding: 10px 15px;
+    border-radius: 18px;
+    word-wrap: break-word;
+}
+
+.chat-message.customer {
+    background: #ff6b8b;
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 5px;
+}
+
+.chat-message.chef {
+    background: #eee;
+    color: #333;
+    margin-right: auto;
+    border-bottom-left-radius: 5px;
+}
+
+/* 响应式设计增强 */
 @media (max-width: 600px) {
     .dish-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -181,4 +276,105 @@ body {
         padding: 10px;
         padding-bottom: 70px;
     }
+    
+    .nav-btn {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+    
+    .nav-btn i {
+        font-size: 18px;
+        margin-bottom: 3px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dish-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .navbar {
+        padding: 8px 0;
+    }
+    
+    .nav-btn {
+        padding: 6px 8px;
+        font-size: 11px;
+    }
+    
+    .dish-image {
+        height: 100px;
+        font-size: 35px;
+    }
+}
+
+/* 暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: #ecf0f1;
+    }
+    
+    .dish-card, .order-card, .cart-item {
+        background: #34495e;
+        color: #ecf0f1;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    
+    .dish-image {
+        background: linear-gradient(45deg, #1e3c72, #2a5298);
+    }
+    
+    .navbar {
+        background: #2c3e50;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+    }
+    
+    .nav-btn {
+        color: #bdc3c7;
+    }
+    
+    .nav-btn.active {
+        color: #ff6b8b;
+    }
+    
+    .btn-small {
+        background: #34495e;
+        color: #ecf0f1;
+    }
+    
+    #chat-messages {
+        background: #2c3e50;
+    }
+    
+    .chat-message.chef {
+        background: #34495e;
+        color: #ecf0f1;
+    }
+}
+
+/* 输入框样式优化 */
+input[type="text"],
+input[type="number"] {
+    width: 100%;
+    padding: 10px 15px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus {
+    border-color: #ff6b8b;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 107, 139, 0.2);
+}
+
+/* 禁用状态样式 */
+.disabled {
+    opacity: 0.5;
+    pointer-events: none;
 }
