@@ -210,4 +210,77 @@ window.deleteDish = async function(id) { if(confirm("删？")) { await fetch(`/a
 window.editDish = async function(id, role) { const dish = dishData.find(d => d._id === id); const name = prompt("改名：", dish.name); const emoji = prompt("改图标：", dish.emoji); let data = { name, emoji }; if (role === 'chef') data.price = parseFloat(prompt("改价格：", dish.price)); await fetch(`/api/menu/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }); loadData(); };
 function showNotification(msg) { const t = document.getElementById('toast'); if(t) { t.textContent = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3000); } }
 
+/* 加载动画 */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #ff6b8b;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 改进的 Toast 通知 */
+.toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 25px;
+    z-index: 1001;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.toast.show {
+    opacity: 1;
+}
+
+/* 改进的按钮样式 */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* 改进的响应式设计 */
+@media (max-width: 480px) {
+    .dish-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .navbar {
+        padding: 8px 0;
+    }
+    
+    .nav-btn {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+}
+
+/* 暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: #ecf0f1;
+    }
+    
+    .dish-card, .order-card {
+        background: #34495e;
+        color: #ecf0f1;
+    }
+}
+
+
 
