@@ -27,6 +27,29 @@ async function loadData() {
     } catch (e) { console.warn("数据同步中..."); }
 }
 
+
+// 防抖函数
+let debounceTimer;
+function debounce(func, delay) {
+    return function(...args) {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+// 购物车恢复
+function restoreCart() {
+    try {
+        const savedCart = localStorage.getItem('kitchenCart');
+        if (savedCart) {
+            const parsed = JSON.parse(savedCart);
+            cart = parsed.filter(item => item.price > 0 && item.name);
+        }
+    } catch (e) {
+        console.warn("购物车恢复失败:", e);
+    }
+}
+
 // 统一渲染当前页面逻辑
 function renderCurrentPage() {
     if (document.getElementById('chat-messages')) renderChat();
@@ -176,3 +199,4 @@ window.rateOrder = async function(id, rating) { await fetch(`/api/order/${id}/ra
 window.deleteDish = async function(id) { if(confirm("删？")) { await fetch(`/api/menu/${id}`, { method: 'DELETE' }); loadData(); } };
 window.editDish = async function(id, role) { const dish = dishData.find(d => d._id === id); const name = prompt("改名：", dish.name); const emoji = prompt("改图标：", dish.emoji); let data = { name, emoji }; if (role === 'chef') data.price = parseFloat(prompt("改价格：", dish.price)); await fetch(`/api/menu/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }); loadData(); };
 function showNotification(msg) { const t = document.getElementById('toast'); if(t) { t.textContent = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3000); } }
+
