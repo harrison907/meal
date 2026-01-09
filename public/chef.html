@@ -5,51 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>珍珍的餐厅 - 后厨</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body onload="initApp()">
     <div class="container">
         <div class="header" style="display:flex; justify-content:space-between; align-items:center;">
-            <h1>👨‍🍳 后厨大权</h1>
-            <button class="btn-small" style="background:#ff9f43; color:white; border:none; padding:5px 15px; border-radius:5px;" onclick="openRecharge()">💰 充值</button>
+            <h1>👨‍🍳 大厨面板</h1>
+            <button class="btn-small" style="background:#ff9f43; color:white;" onclick="openRecharge()">💰 充值</button>
         </div>
 
-        <div class="order-card">
-            <h3>💬 悄悄话</h3>
-            <div id="chat-messages" style="height:120px; overflow-y:auto; background:#f0f0f0; padding:10px; border-radius:10px; margin-bottom:5px;"></div>
-            <div style="display:flex; gap:5px;">
-                <input type="text" id="chat-input" placeholder="回复TA..." style="flex:1;">
-                <button class="btn-small" onclick="sendMessage('chef')">发送</button>
+        <nav class="navbar">
+            <button class="nav-btn active" onclick="switchTab('kitchen')">做菜</button>
+            <button class="nav-btn" onclick="switchTab('chat')">聊天</button>
+            <button class="nav-btn" onclick="switchTab('approve')">审核</button>
+            <button class="nav-btn" onclick="switchTab('manage')">管理</button>
+        </nav>
+
+        <!-- 做菜 Tab -->
+        <div id="kitchen-page" class="page active">
+            <div class="stats" style="margin-bottom:15px;">
+                <div style="background:white; padding:10px; border-radius:10px; text-align:center;">
+                    待做: <span id="waiting-count">0</span> | 已出餐: <span id="today-completed">0</span>
+                </div>
+            </div>
+            <div id="kitchen-orders"></div>
+        </div>
+
+        <!-- 聊天 Tab -->
+        <div id="chat-page" class="page">
+            <div id="chat-messages" style="height:350px; overflow-y:auto; background:#eee; padding:15px; border-radius:15px; margin-bottom:10px;"></div>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="chat-input" style="flex:1;" placeholder="回复TA...">
+                <button class="btn" onclick="sendMessage('chef')">发送</button>
             </div>
         </div>
 
-        <div class="stats" style="display:flex; gap:10px; margin-top:15px;">
-            <div style="flex:1; background:white; padding:10px; border-radius:10px; text-align:center;">待做: <span id="waiting-count">0</span></div>
-            <div style="flex:1; background:white; padding:10px; border-radius:10px; text-align:center;">完成: <span id="today-completed">0</span></div>
-        </div>
-
-        <div id="kitchen-orders"></div>
-
-        <div class="order-card" style="margin-top:20px;">
-            <h3>🆕 待审核提议</h3>
+        <!-- 审核 Tab -->
+        <div id="approve-page" class="page">
+            <h3>🆕 前厅提议的菜品</h3>
             <div id="pending-dishes"></div>
         </div>
 
-        <div class="order-card" style="margin-top:20px;">
-            <h3>📜 菜单管理</h3>
-            <div style="background:#fff5f7; padding:10px; border-radius:10px; margin-bottom:10px;">
+        <!-- 管理 Tab -->
+        <div id="manage-page" class="page">
+            <div class="order-card" style="background:#fff5f7;">
+                <h3>直接新增菜品</h3>
                 <input type="text" id="new-dish-name" placeholder="名称">
                 <input type="text" id="new-dish-emoji" placeholder="图标">
                 <input type="number" id="new-dish-price" placeholder="价格">
-                <button class="btn" style="width:100%; margin-top:5px;" onclick="addDish('chef')">直接上架</button>
+                <button class="btn" style="width:100%; margin-top:5px;" onclick="addDish('chef')">上架</button>
             </div>
             <div id="manage-dish-list"></div>
         </div>
+
         <div id="toast" class="toast"></div>
     </div>
     <script src="script.js"></script>
     <script>
         function openRecharge() {
-            const amount = prompt("请输入给TA充值的金额 (￥)：");
+            const amount = prompt("要给TA充多少钱？(￥)");
             if (amount) fetch('/api/wallet/recharge', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ amount: parseFloat(amount) }) }).then(() => initApp());
         }
     </script>
