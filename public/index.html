@@ -9,9 +9,8 @@
 </head>
 <body>
     <div class="container">
-        <!-- 顶部显示余额 -->
         <div class="wallet-bar" style="background:#ff6b8b; color:white; padding:10px 20px; display:flex; justify-content:space-between; align-items:center;">
-            <span><i class="fas fa-wallet"></i> 我的余额: ￥<span id="user-balance">0.00</span></span>
+            <span><i class="fas fa-wallet"></i> 余额: ￥<span id="user-balance">0.00</span></span>
             <button class="btn-small" onclick="switchTab('chat')" style="background:rgba(255,255,255,0.2); border:none; color:white;">💬 悄悄话</button>
         </div>
 
@@ -19,32 +18,37 @@
             <button class="nav-btn active" onclick="switchTab('menu')">菜单</button>
             <button class="nav-btn" onclick="switchTab('cart')">清单 <span id="cart-count">0</span></button>
             <button class="nav-btn" onclick="switchTab('orders')">记录</button>
-            <button class="nav-btn" onclick="switchTab('manage')">管理</button>
+            <button class="nav-btn" onclick="switchTab('manage')">提议菜品</button>
         </nav>
 
         <div id="menu-page" class="page active"><div id="dish-list" class="dish-grid"></div></div>
         
         <div id="cart-page" class="page">
-            <div id="cart-items"></div>
-            <div class="cart-footer">
-                <p>总计: ￥<span id="cart-total">0</span></p>
-                <button class="btn btn-primary" onclick="submitOrder()">下单并支付</button>
+            <div id="cart-items" style="min-height:200px;"></div>
+            <div class="cart-footer" style="padding:20px; background:white;">
+                <p>总计: ￥<span id="cart-total">0.00</span></p>
+                <button class="btn btn-primary" style="width:100%;" onclick="submitOrder()">确认下单</button>
             </div>
         </div>
 
-        <div id="orders-page" class="page"><div id="orders-list" class="orders-container"></div></div>
+        <div id="orders-page" class="page"><div id="orders-list"></div></div>
 
-        <!-- 管理页：前厅不能设价格 -->
         <div id="manage-page" class="page">
-            <h3>菜品上下架</h3>
+            <div class="order-card">
+                <h3>💡 提议新菜品</h3>
+                <p style="font-size:12px; color:#999; margin-bottom:10px;">提交后需等待大厨审核并定价</p>
+                <input type="text" id="new-dish-name" placeholder="名称 (如：红烧肉)">
+                <input type="text" id="new-dish-emoji" placeholder="图标 (如：🥩)">
+                <button class="btn" style="background:#ff6b8b; color:white; width:100%; margin-top:10px;" onclick="addDish('user')">提交提议</button>
+            </div>
+            <h3>我的提议与修改</h3>
             <div id="manage-dish-list"></div>
         </div>
 
-        <!-- 聊天页 -->
         <div id="chat-page" class="page">
-            <div class="chat-container" id="chat-messages" style="height:300px; overflow-y:auto; background:#f9f9f9; padding:10px; margin-bottom:10px;"></div>
+            <div id="chat-messages" style="height:300px; overflow-y:auto; background:#f9f9f9; padding:10px; border-radius:10px; margin-bottom:10px;"></div>
             <div style="display:flex; gap:10px;">
-                <input type="text" id="chat-input" placeholder="想对TA说点什么..." style="flex:1;">
+                <input type="text" id="chat-input" style="flex:1;" placeholder="想对TA说点什么...">
                 <button class="btn" onclick="sendMessage('customer')">发送</button>
             </div>
         </div>
