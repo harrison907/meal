@@ -6,41 +6,55 @@ const mongoose = require('mongoose');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/kitchen";
 
-mongoose.connect(MONGO_URI)
-    .then(() => console.log("✅ 数据库连接成功"))
-    .catch(err => console.error("❌ 数据库连接失败:", err));
+mongoose.connect(MONGO_URI).then(() => console.log("✅ 数据库连接成功"));
 
-// --- 数据库模型 (安全写法：防止重复定义) ---
+// --- 数据库模型 ---
+// 1. 菜品：增加 price 字段
 const Dish = mongoose.models.Dish || mongoose.model('Dish', {
-    name: String, emoji: String, category: String, time: Number
+    name: String, emoji: String, category: String, time: Number, price: { type: Number, default: 0 }
 });
 
+// 2. 订单
 const Order = mongoose.models.Order || mongoose.model('Order', {
-    items: Array, 
-    status: { type: String, default: 'waiting' },
-    rating: { type: Number, default: 0 },
-    createdAt: { type: Date, default: Date.now }
+    items: Array, status: { type: String, default: 'waiting' },
+    totalPrice: Number, rating: { type: Number, default: 0 }, createdAt: { type: Date, default: Date.now }
+});
+
+// 3. 钱包 (只有一个全局钱包，代表前厅的钱)
+const Wallet = mongoose.models.Wallet || mongoose.model('Wallet', {
+    balance: { type: Number, default: 100 } // 初始给100块
+});
+
+// 4. 聊天记录
+const Message = mongoose.models.Message || mongoose.model('Message', {
+    sender: String, content: String, createdAt: { type: Date, default: Date.now }
 });
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, './public')));
 
-// API 接口
+// --- API 接口 ---
+
+// 钱包相关
+app.get('/api/wallet', async (req, res) => {
+    let w = await Wallet.findOne();
+    if (!w) w = await Wallet.create({ balance: 100 });
+    res.json(w);
+});
+
+// 充值 (后厨专用)
+app.post('/api/wallet/recharge', async (req, res) => {
+    const { amount } = req.body;
+    await Wallet.updateOne({}, { $inc: { balance: amount } }, { upsert: true });
+    res.json({ success: true });
+});
+
+// 菜品相关
 app.get('/api/menu', async (req, res) => {
-    try {
-        let menu = await Dish.find();
-        if (menu.length === 0) {
-            menu = await Dish.insertMany([
-                { name: "爱心煎蛋", emoji: "🍳", category: "breakfast", time: 5 },
-                { name: "浪漫意面", emoji: "🍝", category: "lunch", time: 20 }
-            ]);
-        }
-        res.json(menu);
-    } catch (e) { res.status(500).json(e); }
+    res.json(await Dish.find());
 });
 
 app.post('/api/menu', async (req, res) => {
@@ -54,15 +68,27 @@ app.delete('/api/menu/:id', async (req, res) => {
     res.json({ success: true });
 });
 
+// 订单相关 (带金额检查)
 app.post('/api/order', async (req, res) => {
-    const order = new Order(req.body);
+    const { items } = req.body;
+    const total = items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    
+    const wallet = await Wallet.findOne();
+    if (wallet.balance < total) {
+        return res.status(400).json({ success: false, message: "余额不足，快去找TA充值吧！" });
+    }
+
+    // 扣费
+    wallet.balance -= total;
+    await wallet.save();
+
+    const order = new Order({ items, totalPrice: total });
     await order.save();
-    res.json(order);
+    res.json({ success: true, order });
 });
 
 app.get('/api/orders', async (req, res) => {
-    const orders = await Order.find().sort({ createdAt: -1 });
-    res.json(orders);
+    res.json(await Order.find().sort({ createdAt: -1 }));
 });
 
 app.put('/api/order/:id', async (req, res) => {
@@ -70,13 +96,18 @@ app.put('/api/order/:id', async (req, res) => {
     res.json({ success: true });
 });
 
-app.put('/api/order/:id/rate', async (req, res) => {
-    await Order.findByIdAndUpdate(req.params.id, { rating: req.body.rating });
-    res.json({ success: true });
+// 聊天相关
+app.get('/api/messages', async (req, res) => {
+    res.json(await Message.find().sort({ createdAt: 1 }).limit(50));
 });
 
-// 页面路由
+app.post('/api/messages', async (req, res) => {
+    const msg = new Message(req.body);
+    await msg.save();
+    res.json(msg);
+});
+
 app.get('/chef', (req, res) => res.sendFile(path.join(__dirname, './public/chef.html')));
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, './public/index.html')));
 
-app.listen(PORT, () => console.log(`🚀 服务启动: ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 餐厅已升级: ${PORT}`));
