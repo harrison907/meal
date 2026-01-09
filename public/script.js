@@ -10,11 +10,18 @@ window.initApp = async function() {
 }
 document.addEventListener('DOMContentLoaded', () => { if(!document.body.onload) initApp(); });
 
+// --- script.js 里的 loadData 替换为这个调试版 ---
 async function loadData() {
     try {
         const [resM, resO, resW, resMsg] = await Promise.all([
             fetch('/api/menu'), fetch('/api/orders'), fetch('/api/wallet'), fetch('/api/messages')
         ]);
+        
+        // 检查请求是否成功
+        if (!resM.ok || !resO.ok || !resW.ok || !resMsg.ok) {
+            throw new Error("某个接口返回了非200状态码");
+        }
+
         dishData = await resM.json();
         orders = await resO.json();
         const wallet = await resW.json();
@@ -27,7 +34,30 @@ async function loadData() {
         if (document.getElementById('manage-dish-list')) renderManageLists();
         if (document.getElementById('orders-list')) renderOrders();
         updateCartCount();
-    } catch (e) { console.warn("同步中..."); }
+    } catch (e) { 
+        // 这样你可以看到具体的报错信息
+        console.error("同步失败具体原因:", e); 
+    }
+}
+
+// 修改 renderDishes，如果没有菜显示提示
+function renderDishes() {
+    const container = document.getElementById('dish-list');
+    if (!container) return;
+    const approved = dishData.filter(d => d.isApproved);
+    
+    if (approved.length === 0) {
+        container.innerHTML = `<p style="grid-column: 1/-1; text-align:center; padding:50px; color:#999;">菜单是空的，快去“提议菜品”或让大厨在后厨上架吧！</p>`;
+        return;
+    }
+
+    container.innerHTML = approved.map(dish => `
+        <div class="dish-card" onclick="addToCart('${dish._id}')">
+            <div class="dish-image"><span>${dish.emoji}</span></div>
+            <div class="dish-name">${dish.name}</div>
+            <div style="color:#ff4757; font-weight:bold;">￥${dish.price}</div>
+        </div>
+    `).join('');
 }
 
 // 评分计算
@@ -175,3 +205,4 @@ window.sendMessage = async function(sender) { const i = document.getElementById(
 function renderChat() { const c = document.getElementById('chat-messages'); c.innerHTML = messages.map(m => `<div style="text-align:${m.sender==='chef'?'left':'right'}"><span style="background:${m.sender==='chef'?'#eee':'#ff6b8b'}; color:${m.sender==='chef'?'#333':'#fff'}; padding:5px 10px; border-radius:10px; margin:2px; display:inline-block;">${m.content}</span></div>`).join(''); c.scrollTop = c.scrollHeight; }
 function updateCartCount() { const el = document.getElementById('cart-count'); if(el) el.textContent = cart.reduce((s,i)=>s+i.quantity, 0); }
 function showNotification(msg) { const t = document.getElementById('toast'); if(t) { t.textContent = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3000); } }
+
