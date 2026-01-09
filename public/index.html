@@ -9,48 +9,53 @@
 </head>
 <body>
     <div class="container">
+        <!-- 余额顶部栏 -->
         <div class="wallet-bar" style="background:#ff6b8b; color:white; padding:10px 20px; display:flex; justify-content:space-between; align-items:center;">
             <span><i class="fas fa-wallet"></i> 余额: ￥<span id="user-balance">0.00</span></span>
-            <button class="btn-small" onclick="switchTab('chat')" style="background:rgba(255,255,255,0.2); border:none; color:white;">💬 悄悄话</button>
+            <span style="font-size:12px;">珍珍点餐中...</span>
         </div>
 
         <nav class="navbar">
             <button class="nav-btn active" onclick="switchTab('menu')">菜单</button>
-            <button class="nav-btn" onclick="switchTab('cart')">清单 <span id="cart-count">0</span></button>
-            <button class="nav-btn" onclick="switchTab('orders')">记录</button>
-            <button class="nav-btn" onclick="switchTab('manage')">提议菜品</button>
+            <button class="nav-btn" onclick="switchTab('cart')">清单<span id="cart-count">0</span></button>
+            <button class="nav-btn" onclick="switchTab('orders')">状态</button>
+            <button class="nav-btn" onclick="switchTab('chat')">聊天</button>
+            <button class="nav-btn" onclick="switchTab('manage')">提议</button>
         </nav>
 
         <div id="menu-page" class="page active"><div id="dish-list" class="dish-grid"></div></div>
         
         <div id="cart-page" class="page">
-            <div id="cart-items" style="min-height:200px;"></div>
+            <div id="cart-items" style="min-height:300px;"></div>
             <div class="cart-footer" style="padding:20px; background:white;">
-                <p>总计: ￥<span id="cart-total">0.00</span></p>
+                <p>总金额: ￥<span id="cart-total">0.00</span></p>
                 <button class="btn btn-primary" style="width:100%;" onclick="submitOrder()">确认下单</button>
             </div>
         </div>
 
-        <div id="orders-page" class="page"><div id="orders-list"></div></div>
+        <div id="orders-page" class="page">
+            <div class="header"><h1>🥗 制作进度</h1></div>
+            <div id="orders-list"></div>
+        </div>
+
+        <div id="chat-page" class="page">
+            <div class="header"><h1>💬 悄悄话</h1></div>
+            <div id="chat-messages" style="height:350px; overflow-y:auto; background:#f9f9f9; padding:15px; border-radius:15px; margin-bottom:10px;"></div>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="chat-input" style="flex:1;" placeholder="跟大厨说点什么...">
+                <button class="btn" onclick="sendMessage('customer')">发送</button>
+            </div>
+        </div>
 
         <div id="manage-page" class="page">
             <div class="order-card">
                 <h3>💡 提议新菜品</h3>
-                <p style="font-size:12px; color:#999; margin-bottom:10px;">提交后需等待大厨审核并定价</p>
-                <input type="text" id="new-dish-name" placeholder="名称 (如：红烧肉)">
-                <input type="text" id="new-dish-emoji" placeholder="图标 (如：🥩)">
-                <button class="btn" style="background:#ff6b8b; color:white; width:100%; margin-top:10px;" onclick="addDish('user')">提交提议</button>
+                <input type="text" id="new-dish-name" placeholder="名称">
+                <input type="text" id="new-dish-emoji" placeholder="图标">
+                <button class="btn" style="background:#ff6b8b; color:white; width:100%; margin-top:10px;" onclick="addDish('user')">提交给大厨审核</button>
             </div>
-            <h3>我的提议与修改</h3>
+            <h3>我的提议记录</h3>
             <div id="manage-dish-list"></div>
-        </div>
-
-        <div id="chat-page" class="page">
-            <div id="chat-messages" style="height:300px; overflow-y:auto; background:#f9f9f9; padding:10px; border-radius:10px; margin-bottom:10px;"></div>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="chat-input" style="flex:1;" placeholder="想对TA说点什么...">
-                <button class="btn" onclick="sendMessage('customer')">发送</button>
-            </div>
         </div>
 
         <div id="toast" class="toast"></div>
