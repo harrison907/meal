@@ -4,27 +4,37 @@ let orders = [];
 let messages = [];
 
 window.initApp = async function() {
+    restoreCart();
     await loadData();
-    if (!window.syncTimer) window.syncTimer = setInterval(loadData, 3000);
-}
-document.addEventListener('DOMContentLoaded', () => { if(!document.body.onload) initApp(); });
+    if (!window.syncTimer) {
+        window.syncTimer = setInterval(loadData, 5000); // 改为5秒一次
+    }
+};
 
 async function loadData() {
     try {
-        const [resM, resO, resW, resMsg] = await Promise.all([
-            fetch('/api/menu'), fetch('/api/orders'), fetch('/api/wallet'), fetch('/api/messages')
+        const [resM, resO, resW, resMsg] = await Promise.allSettled([
+            fetch('/api/menu').then(r => r.ok ? r.json() : []),
+            fetch('/api/orders').then(r => r.ok ? r.json() : []),
+            fetch('/api/wallet').then(r => r.ok ? r.json() : { balance: 0 }),
+            fetch('/api/messages').then(r => r.ok ? r.json() : [])
         ]);
-        dishData = await resM.json();
-        orders = await resO.json();
-        const wallet = await resW.json();
-        messages = await resMsg.json();
-
-        if (document.getElementById('user-balance')) document.getElementById('user-balance').textContent = wallet.balance.toFixed(2);
         
-        // 自动分发渲染
-        renderCurrentPage();
+        dishData = resM.status === 'fulfilled' ? resM.value : [];
+        orders = resO.status === 'fulfilled' ? resO.value : [];
+        const wallet = resW.status === 'fulfilled' ? resW.value : { balance: 0 };
+        messages = resMsg.status === 'fulfilled' ? resMsg.value : [];
+        
+        if (document.getElementById('user-balance')) {
+            document.getElementById('user-balance').textContent = wallet.balance.toFixed(2);
+        }
+        
+        debounce(renderCurrentPage, 100)();
         updateCartCount();
-    } catch (e) { console.warn("数据同步中..."); }
+    } catch (e) { 
+        console.warn("数据同步失败:", e);
+        showNotification("网络连接不稳定");
+    }
 }
 
 
@@ -199,4 +209,5 @@ window.rateOrder = async function(id, rating) { await fetch(`/api/order/${id}/ra
 window.deleteDish = async function(id) { if(confirm("删？")) { await fetch(`/api/menu/${id}`, { method: 'DELETE' }); loadData(); } };
 window.editDish = async function(id, role) { const dish = dishData.find(d => d._id === id); const name = prompt("改名：", dish.name); const emoji = prompt("改图标：", dish.emoji); let data = { name, emoji }; if (role === 'chef') data.price = parseFloat(prompt("改价格：", dish.price)); await fetch(`/api/menu/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }); loadData(); };
 function showNotification(msg) { const t = document.getElementById('toast'); if(t) { t.textContent = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3000); } }
+
 
