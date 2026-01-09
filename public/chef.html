@@ -3,20 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👨‍🍳 珍珍的餐厅-后厨</title>
+    <title>珍珍的餐厅 - 后厨</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body onload="initApp()">
     <div class="container">
-        <div class="header"><h1>👨‍🍳 后厨生产线</h1></div>
-        <div class="stats">
-            <div class="stat-card"><h3>待制作</h3><p id="waiting-count">0</p></div>
-            <div class="stat-card"><h3>今日完成</h3><p id="today-completed">0</p></div>
+        <div class="header">
+            <h1>👨‍🍳 后厨大权</h1>
+            <button onclick="openRecharge()">💰 给TA充值</button>
         </div>
+
+        <!-- 聊天区域 -->
+        <div class="order-card" style="margin-bottom:20px;">
+            <h3>💬 聊天窗</h3>
+            <div id="chat-messages" style="height:150px; overflow-y:auto; background:#eee; padding:10px; font-size:12px;"></div>
+            <div style="display:flex; gap:5px; margin-top:5px;">
+                <input type="text" id="chat-input" placeholder="回复TA...">
+                <button onclick="sendMessage('chef')">发送</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div>待做: <span id="waiting-count">0</span></div>
+            <div>完成: <span id="today-completed">0</span></div>
+        </div>
+
         <div id="kitchen-orders"></div>
+
+        <!-- 管理菜单增加价格输入 -->
+        <div class="order-card" style="margin-top:20px;">
+            <h3>管理菜单 & 定价</h3>
+            <div style="display:grid; gap:5px;">
+                <input type="text" id="new-dish-name" placeholder="名称">
+                <input type="text" id="new-dish-emoji" placeholder="图标">
+                <input type="number" id="new-dish-price" placeholder="价格(￥)">
+                <button onclick="addDish()">上架菜品</button>
+            </div>
+            <div id="manage-dish-list"></div>
+        </div>
+
         <div id="toast" class="toast"></div>
     </div>
     <script src="script.js"></script>
+    <script>
+        function openRecharge() {
+            const amount = prompt("请输入充值金额（￥）：");
+            if (amount) {
+                fetch('/api/wallet/recharge', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ amount: parseFloat(amount) })
+                }).then(() => { alert("充值成功！TA变有钱了~"); initApp(); });
+            }
+        }
+    </script>
 </body>
 </html>
