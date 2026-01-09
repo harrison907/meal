@@ -4,6 +4,14 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+// 新增：添加额外的安全配置
+const rateLimit = require('express-rate-limit'); // 需要安装：npm install express-rate-limit
+const express = require('express');
+const path = require('path');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+
 const app = express();
 const PORT = process.env.PORT || 8080;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/kitchen";
@@ -30,6 +38,25 @@ const Message = mongoose.models.Message || mongoose.model('Message', {
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, './public')));
+
+// 添加日志中间件
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
+    next();
+});
+
+// 限制请求频率
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15分钟
+    max: 100 // 限制每个IP 100次请求
+});
+app.use('/api/', limiter);
+
+// 错误处理中间件（放在最后）
+app.use((err, req, res, next) => {
+    console.error('服务器错误:', err);
+    res.status(500).json({ success: false, message: '服务器内部错误' });
+});
 
 // --- API 接口 ---
 app.get('/api/wallet', async (req, res) => {
@@ -82,4 +109,5 @@ app.get('/chef', (req, res) => res.sendFile(path.join(__dirname, './public/chef.
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, './public/index.html')));
 
 app.listen(PORT, () => console.log(`🚀 餐厅系统运行中: ${PORT}`));
+
 
