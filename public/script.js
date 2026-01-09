@@ -8,6 +8,7 @@ window.initApp = async function() {
     await loadData();
     if (!window.syncTimer) window.syncTimer = setInterval(loadData, 3000);
 }
+document.addEventListener('DOMContentLoaded', () => { if(!document.body.onload) initApp(); });
 
 async function loadData() {
     try {
@@ -19,137 +20,158 @@ async function loadData() {
         const wallet = await resW.json();
         messages = await resMsg.json();
 
-        // UI 更新
         if (document.getElementById('user-balance')) document.getElementById('user-balance').textContent = wallet.balance.toFixed(2);
         if (document.getElementById('chat-messages')) renderChat();
         if (document.getElementById('kitchen-orders')) renderKitchen();
-        
-        // 分别渲染前厅和后厨的管理列表
-        if (document.getElementById('dish-list')) renderDishes(); // 前厅菜单只显Approved
-        if (document.getElementById('manage-dish-list')) renderManageLists(); // 统一调用管理渲染
-        
+        if (document.getElementById('dish-list')) renderDishes();
+        if (document.getElementById('manage-dish-list')) renderManageLists();
+        if (document.getElementById('orders-list')) renderOrders();
         updateCartCount();
     } catch (e) { console.warn("同步中..."); }
 }
 
-// --- 菜品管理核心逻辑 ---
+// 评分计算
+function getAvg(name) {
+    const rated = orders.filter(o => o.rating > 0 && o.items.some(i => i.name === name));
+    if (rated.length === 0) return "⭐⭐⭐⭐⭐";
+    const sum = rated.reduce((s, o) => s + o.rating, 0);
+    return `⭐ ${(sum / rated.length).toFixed(1)}`;
+}
 
-// 1. 前厅/后厨通用的增加菜品
+// 1. 菜品管理
 window.addDish = async function(role) {
     const name = document.getElementById('new-dish-name').value;
     const emoji = document.getElementById('new-dish-emoji').value;
-    const priceInput = document.getElementById('new-dish-price');
-    const price = priceInput ? parseFloat(priceInput.value) : 0;
-
+    const priceEl = document.getElementById('new-dish-price');
+    const price = priceEl ? parseFloat(priceEl.value) : 0;
     if (!name || !emoji) return alert("请填完名称和图标");
-
-    // 如果是前厅添加，isApproved 为 false
-    // 如果是后厨添加，isApproved 为 true
-    const isApproved = (role === 'chef');
-
     await fetch('/api/menu', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ name, emoji, price, isApproved })
+        body: JSON.stringify({ name, emoji, price, isApproved: (role === 'chef') })
     });
-
     document.getElementById('new-dish-name').value = '';
     document.getElementById('new-dish-emoji').value = '';
-    if(priceInput) priceInput.value = '';
-    
-    alert(role === 'chef' ? "已直接上架" : "已提交提议，等待TA审核哦~");
+    alert(role === 'chef' ? "已上架" : "提议成功，等待审核~");
     loadData();
 }
 
-// 2. 后厨审核并通过
 window.approveDish = async function(id) {
-    const price = prompt("给这道新菜定个价吧 (￥)：");
-    if (price === null) return;
-    await fetch(`/api/menu/${id}`, {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ isApproved: true, price: parseFloat(price) })
-    });
-    loadData();
-}
-
-// 3. 修改菜品 (前厅改名/图标，后厨改全部)
-window.editDish = async function(id, role) {
-    const dish = dishData.find(d => d._id === id);
-    const newName = prompt("修改名称：", dish.name);
-    const newEmoji = prompt("修改图标：", dish.emoji);
-    let updateData = { name: newName, emoji: newEmoji };
-
-    if (role === 'chef') {
-        const newPrice = prompt("修改价格：", dish.price);
-        updateData.price = parseFloat(newPrice);
-    }
-
-    await fetch(`/api/menu/${id}`, {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(updateData)
-    });
+    const price = prompt("定价为 (￥)：");
+    if (!price) return;
+    await fetch(`/api/menu/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ isApproved: true, price: parseFloat(price) }) });
     loadData();
 }
 
 window.deleteDish = async function(id) {
-    if (!confirm("确定要下架这道菜吗？")) return;
-    await fetch(`/api/menu/${id}`, { method: 'DELETE' });
+    if (confirm("确定删除？")) { await fetch(`/api/menu/${id}`, { method: 'DELETE' }); loadData(); }
+}
+
+window.editDish = async function(id, role) {
+    const dish = dishData.find(d => d._id === id);
+    const name = prompt("改名：", dish.name);
+    const emoji = prompt("改图标：", dish.emoji);
+    let data = { name, emoji };
+    if (role === 'chef') data.price = parseFloat(prompt("改价格：", dish.price));
+    await fetch(`/api/menu/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
     loadData();
 }
 
-// --- 渲染逻辑 ---
-
+// 2. 渲染函数
 function renderDishes() {
     const container = document.getElementById('dish-list');
-    if (!container) return;
-    // 前厅菜单：只显示已审核通过的
-    const approvedDishes = dishData.filter(d => d.isApproved);
-    container.innerHTML = approvedDishes.map(dish => `
+    const approved = dishData.filter(d => d.isApproved);
+    container.innerHTML = approved.map(dish => `
         <div class="dish-card" onclick="addToCart('${dish._id}')">
             <div class="dish-image"><span>${dish.emoji}</span></div>
             <div class="dish-name">${dish.name}</div>
-            <div style="color:#ff4757; font-weight:bold;">￥${dish.price}</div>
-            <button class="btn-small">加入清单</button>
+            <div style="color:#ff4757; font-weight:bold;">￥${dish.price} <small style="font-weight:normal; color:#999; font-size:10px;">(${getAvg(dish.name)})</small></div>
         </div>
     `).join('');
 }
 
 function renderManageLists() {
-    // 后厨待审核列表
     const pendingContainer = document.getElementById('pending-dishes');
     if (pendingContainer) {
-        const pending = dishData.filter(d => !d.isApproved);
-        pendingContainer.innerHTML = pending.map(d => `
-            <div style="display:flex; justify-content:space-between; padding:10px; background:#fff; border-radius:8px; margin-bottom:5px;">
-                <span>${d.emoji} ${d.name} (待定)</span>
-                <div>
-                    <button onclick="approveDish('${d._id}')" style="color:green;">定价上架</button>
-                    <button onclick="deleteDish('${d._id}')" style="color:red;">拒绝</button>
-                </div>
-            </div>
+        pendingContainer.innerHTML = dishData.filter(d => !d.isApproved).map(d => `
+            <div class="cart-item"><span>${d.emoji} ${d.name}</span>
+            <button onclick="approveDish('${d._id}')">定价上架</button></div>
         `).join('');
     }
-
-    // 已上架管理列表 (前厅或后厨)
     const manageContainer = document.getElementById('manage-dish-list');
     if (manageContainer) {
-        const isChefPage = !!document.getElementById('pending-dishes');
-        const role = isChefPage ? 'chef' : 'user';
-        const approved = dishData.filter(d => d.isApproved);
-        manageContainer.innerHTML = approved.map(d => `
-            <div style="display:flex; justify-content:space-between; padding:10px; background:#fff; border-radius:8px; margin-bottom:5px;">
-                <span>${d.emoji} ${d.name} ${isChefPage ? `(￥${d.price})` : ''}</span>
-                <div>
-                    <button onclick="editDish('${d._id}', '${role}')">编辑</button>
-                    <button onclick="deleteDish('${d._id}')">删除</button>
-                </div>
-            </div>
+        const isChef = !!document.getElementById('pending-dishes');
+        manageContainer.innerHTML = dishData.filter(d => d.isApproved).map(d => `
+            <div class="cart-item"><span>${d.emoji} ${d.name} (￥${d.price})</span>
+            <button onclick="editDish('${d._id}', '${isChef?'chef':'user'}')">改</button>
+            <button onclick="deleteDish('${d._id}')">删</button></div>
         `).join('');
     }
 }
 
-// --- 其余辅助函数 (聊天、购物车、订单、状态切换等) 全部保持与最终完整版一致 ---
-// (由于篇幅，此处省略，请确保你保留了上一次我发给你的 switchTab, sendMessage, renderChat, renderKitchen 等所有函数)
-// 记得在 script.js 最下面加上之前的 switchTab, renderChat, renderKitchen, addToCart, submitOrder 等函数！
+function renderKitchen() {
+    const container = document.getElementById('kitchen-orders');
+    const waiting = orders.filter(o => o.status !== 'done');
+    document.getElementById('waiting-count').textContent = waiting.length;
+    document.getElementById('today-completed').textContent = orders.filter(o => o.status === 'done').length;
+    container.innerHTML = waiting.map(o => `
+        <div class="order-card">
+            <strong>单号 #${o._id.slice(-4)}</strong>
+            <div>${o.items.map(i => `${i.name} x ${i.quantity}`).join(', ')}</div>
+            <button class="btn" style="background:#2ed573; color:white; width:100%; margin-top:10px;" onclick="updateStatus('${o._id}', 'done')">完成制作</button>
+        </div>
+    `).join('');
+}
+
+function renderOrders() {
+    const container = document.getElementById('orders-list');
+    container.innerHTML = orders.map(o => `
+        <div class="order-card">
+            <div style="display:flex; justify-content:space-between;"><strong>单号 #${o._id.slice(-4)}</strong><span>${o.status}</span></div>
+            <div>${o.items.map(i => `${i.name} x ${i.quantity}`).join(', ')}</div>
+            <div style="font-size:12px; color:#999;">总价: ￥${o.totalPrice.toFixed(2)}</div>
+            ${o.status === 'done' && o.rating === 0 ? `<div style="margin-top:5px;">打分：${[1,2,3,4,5].map(n => `<button onclick="rateOrder('${o._id}', ${n})">${n}⭐</button>`).join('')}</div>` : o.rating > 0 ? `评分: ${o.rating}⭐` : ''}
+        </div>
+    `).join('');
+}
+
+// 3. 通用功能
+window.switchTab = function(tab) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    const p = document.getElementById(`${tab}-page`);
+    const b = document.querySelector(`[onclick*="'${tab}'"]`);
+    if(p) p.classList.add('active'); if(b) b.classList.add('active');
+    if(tab==='cart') renderCart();
+};
+
+window.addToCart = function(id) {
+    const d = dishData.find(i => i._id === id);
+    const ex = cart.find(i => i._id === id);
+    if(ex) ex.quantity++; else cart.push({...d, quantity:1});
+    localStorage.setItem('kitchenCart', JSON.stringify(cart));
+    updateCartCount(); showNotification(`已加 ${d.name} ❤️`);
+};
+
+window.renderCart = function() {
+    const c = document.getElementById('cart-items');
+    const t = document.getElementById('cart-total');
+    const total = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+    if(t) t.textContent = total.toFixed(2);
+    c.innerHTML = cart.map(i => `<div class="cart-item"><span>${i.name} x ${i.quantity} (￥${i.price})</span><button onclick="removeFromCart('${i._id}')">删</button></div>`).join('');
+};
+
+window.removeFromCart = function(id) { cart = cart.filter(i => i._id !== id); localStorage.setItem('kitchenCart', JSON.stringify(cart)); renderCart(); updateCartCount(); };
+
+window.submitOrder = async function() {
+    const res = await fetch('/api/order', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ items: cart }) });
+    const json = await res.json();
+    if(!json.success) alert(json.message); else { cart = []; localStorage.removeItem('kitchenCart'); switchTab('orders'); initApp(); }
+};
+
+window.updateStatus = async function(id, status) { await fetch(`/api/order/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ status }) }); loadData(); };
+window.rateOrder = async function(id, rating) { await fetch(`/api/order/${id}/rate`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ rating }) }); loadData(); };
+window.sendMessage = async function(sender) { const i = document.getElementById('chat-input'); if(!i.value) return; await fetch('/api/messages', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ sender, content: i.value }) }); i.value = ''; loadData(); };
+function renderChat() { const c = document.getElementById('chat-messages'); c.innerHTML = messages.map(m => `<div style="text-align:${m.sender==='chef'?'left':'right'}"><span style="background:${m.sender==='chef'?'#eee':'#ff6b8b'}; color:${m.sender==='chef'?'#333':'#fff'}; padding:5px 10px; border-radius:10px; margin:2px; display:inline-block;">${m.content}</span></div>`).join(''); c.scrollTop = c.scrollHeight; }
+function updateCartCount() { const el = document.getElementById('cart-count'); if(el) el.textContent = cart.reduce((s,i)=>s+i.quantity, 0); }
+function showNotification(msg) { const t = document.getElementById('toast'); if(t) { t.textContent = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3000); } }
