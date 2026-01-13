@@ -8,17 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body onload="initApp()">
-    <!-- 加载状态提示 -->
-    <div id="loading" style="display:none; text-align:center; padding:20px; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(255,255,255,0.9); z-index:1000; border-radius:10px;">
-        <div class="loading-spinner"></div>
-        <p>加载中...</p>
-    </div>
-
-    <!-- 离线提示 -->
-    <div id="offline-alert" style="display:none; background:#ff4757; color:white; text-align:center; padding:10px; position:fixed; top:0; left:0; right:0; z-index:1001;">
-        ⚠️ 网络连接已断开
-    </div>
-
     <div class="container">
         <div class="header" style="display:flex; justify-content:space-between; align-items:center;">
             <h1>👨‍🍳 大厨面板</h1>
@@ -63,7 +52,7 @@
                 <h3>直接新增菜品</h3>
                 <input type="text" id="new-dish-name" placeholder="名称">
                 <input type="text" id="new-dish-emoji" placeholder="图标">
-                <input type="number" id="new-dish-price" placeholder="价格" min="0" step="0.01">
+                <input type="number" id="new-dish-price" placeholder="价格">
                 <button class="btn" style="width:100%; margin-top:5px;" onclick="addDish('chef')">上架</button>
             </div>
             <div id="manage-dish-list"></div>
@@ -71,42 +60,11 @@
 
         <div id="toast" class="toast"></div>
     </div>
-    
     <script src="script.js"></script>
     <script>
         function openRecharge() {
             const amount = prompt("要给TA充多少钱？(￥)");
-            if (amount) {
-                const amountNum = parseFloat(amount);
-                if (isNaN(amountNum) || amountNum <= 0) {
-                    alert("请输入有效的金额");
-                    return;
-                }
-                
-                showLoading(true);
-                fetch('/api/wallet/recharge', { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({ amount: amountNum }) 
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('充值失败');
-                    }
-                    return response.json();
-                })
-                .then(() => {
-                    showNotification('充值成功');
-                    initApp();
-                })
-                .catch(error => {
-                    console.error('充值错误:', error);
-                    alert('充值失败，请重试');
-                })
-                .finally(() => {
-                    showLoading(false);
-                });
-            }
+            if (amount) fetch('/api/wallet/recharge', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ amount: parseFloat(amount) }) }).then(() => initApp());
         }
     </script>
 </body>

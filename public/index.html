@@ -8,17 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- 加载状态提示 -->
-    <div id="loading" style="display:none; text-align:center; padding:20px; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(255,255,255,0.9); z-index:1000; border-radius:10px;">
-        <div class="loading-spinner"></div>
-        <p>加载中...</p>
-    </div>
-
-    <!-- 离线提示 -->
-    <div id="offline-alert" style="display:none; background:#ff4757; color:white; text-align:center; padding:10px; position:fixed; top:0; left:0; right:0; z-index:1001;">
-        ⚠️ 网络连接已断开
-    </div>
-
     <div class="container">
         <!-- 余额顶部栏 -->
         <div class="wallet-bar" style="background:#ff6b8b; color:white; padding:10px 20px; display:flex; justify-content:space-between; align-items:center;">
@@ -71,27 +60,6 @@
 
         <div id="toast" class="toast"></div>
     </div>
-    
     <script src="script.js"></script>
-    <script>
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            // 检查是否有 initApp 函数
-            if (typeof initApp === 'function') {
-                initApp();
-            } else {
-                // 如果 script.js 还没加载，等待一下
-                setTimeout(function() {
-                    if (typeof initApp === 'function') {
-                        initApp();
-                    } else {
-                        console.error('initApp 函数未找到');
-                        document.getElementById('loading').style.display = 'block';
-                        document.getElementById('loading').innerHTML = '<p>加载失败，请刷新页面</p>';
-                    }
-                }, 1000);
-            }
-        });
-    </script>
 </body>
 </html>
